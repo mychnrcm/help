@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payer Quick Lookup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 560px; width: 100%; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fff; }
+  .container { display: flex; flex-direction: column; height: 100%; width: 100%; }
+
+  .header { background: #fff; border-bottom: 3px solid #C85A00; padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .header-icon { width: 36px; height: 36px; background: #C85A00; border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .header-icon svg { width: 18px; height: 18px; }
+  .header-text h1 { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+  .header-text p { font-size: 11px; color: #6b7280; margin-top: 1px; }
+
+  .search-section { padding: 10px 16px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; background: #faf9f8; border-bottom: 1px solid #e5e7eb; }
+  .search-wrapper { flex: 1; position: relative; }
+  .search-wrapper svg { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; pointer-events: none; }
+  .search-input { width: 100%; padding: 7px 12px 7px 32px; border: 1px solid #d1d5db; border-radius: 5px; font-size: 13px; font-family: inherit; outline: none; background: #fff; transition: border-color 0.15s; }
+  .search-input:focus { border-color: #C85A00; }
+  .search-input::placeholder { color: #b0b7c0; }
+
+  .filter-buttons { display: flex; gap: 5px; flex-shrink: 0; }
+  .filter-btn { padding: 6px 13px; border: 1px solid #d1d5db; border-radius: 5px; background: #fff; font-size: 12px; font-family: inherit; cursor: pointer; transition: all 0.15s; color: #374151; font-weight: 500; white-space: nowrap; }
+  .filter-btn:hover { border-color: #C85A00; color: #C85A00; }
+  .filter-btn.active { background: #C85A00; border-color: #C85A00; color: #fff; }
+
+  .list-container { flex: 1; overflow-y: auto; min-height: 0; }
+  .list-container::-webkit-scrollbar { width: 5px; }
+  .list-container::-webkit-scrollbar-track { background: #f3f4f6; }
+  .list-container::-webkit-scrollbar-thumb { background: #C85A00; border-radius: 3px; }
+  .list-container::-webkit-scrollbar-thumb:hover { background: #a34a00; }
+
+  .section-header { display: flex; align-items: center; gap: 7px; padding: 8px 16px; font-size: 11px; font-weight: 600; color: #6b7280; background: #f9fafb; border-bottom: 1px solid #e5e7eb; border-top: 1px solid #e5e7eb; letter-spacing: 0.03em; text-transform: uppercase; position: sticky; top: 0; z-index: 2; }
+  .section-header svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  .payer-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; border-bottom: 1px solid #f3f4f6; gap: 10px; transition: background 0.1s; }
+  .payer-row:hover { background: #fff8f4; }
+  .payer-info { flex: 1; min-width: 0; }
+  .payer-name { font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 3px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 3px; }
+
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; white-space: nowrap; letter-spacing: 0.01em; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-yellow { background: #fef9c3; color: #854d0e; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-purple { background: #f3e8ff; color: #6b21a8; }
+  .badge-gray   { background: #f3f4f6; color: #4b5563; }
+  .badge-teal   { background: #ccfbf1; color: #0f766e; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+
+  .payer-action { flex-shrink: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 210px; }
+
+  .portal-btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 11px; background: #C85A00; color: #fff; border: none; border-radius: 5px; font-size: 11px; font-weight: 600; font-family: inherit; cursor: pointer; text-decoration: none; transition: background 0.15s; white-space: nowrap; }
+  .portal-btn:hover { background: #a34a00; }
+  .portal-btn svg { width: 11px; height: 11px; flex-shrink: 0; stroke: white; }
+  .portal-btn.secondary { background: #fff; color: #C85A00; border: 1px solid #C85A00; }
+  .portal-btn.secondary:hover { background: #fff4ec; }
+  .portal-btn.secondary svg { stroke: #C85A00; }
+
+  .phone-display { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: #C85A00; white-space: nowrap; }
+  .phone-display svg { width: 13px; height: 13px; flex-shrink: 0; }
+  .no-phone { font-size: 12px; color: #9ca3af; font-style: italic; }
+
+  .empty-state { padding: 28px 20px; text-align: center; }
+  .empty-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.4; }
+  .empty-title { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+  .empty-sub { font-size: 12px; color: #6b7280; line-height: 1.6; margin-bottom: 14px; }
+  .empty-query { color: #C85A00; font-weight: 700; }
+  .empty-search-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; background: #C85A00; color: #fff; border-radius: 5px; font-size: 12px; font-weight: 600; font-family: inherit; text-decoration: none; transition: background 0.15s; }
+  .empty-search-btn:hover { background: #a34a00; }
+  .empty-search-btn svg { width: 13px; height: 13px; stroke: white; }
+
+  .footer { padding: 8px 16px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; background: #fff; }
+  .footer-count { font-size: 12px; color: #374151; }
+  .footer-count strong { color: #C85A00; }
+  .footer-updated { font-size: 11px; color: #9ca3af; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>Payer Portal Quick Lookup</h1>
+      <p>MyCHN — RCM Operations Help Source</p>
+    </div>
+  </header>
+
+  <div class="search-section">
+    <div class="search-wrapper">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search payers..." autocomplete="off">
+    </div>
+    <div class="filter-buttons">
+      <button class="filter-btn active" id="filterAll">All</button>
+      <button class="filter-btn" id="filterPhone">Phone only</button>
+    </div>
+  </div>
+
+  <div class="list-container" id="listContainer"></div>
+
+  <footer class="footer">
+    <div class="footer-count">Showing <strong id="payerCount">0</strong> payers</div>
+    <div class="footer-updated">Last updated May 2026</div>
+  </footer>
+
+</div>
+<script>
+const PORTAL_PAYERS = [
+  { name: "90 Degrees", portals: [{ url: "https://portal.90degreebenefits.com/ProviderPortal/", label: "Open portal" }], badges: ["nologin"] },
+  { name: "Aetna Senior Supplement", portals: [{ url: "https://www.aetnaseniorproducts.com/ssi/providers.html", label: "Open portal" }], badges: ["nologin"] },
+  { name: "Aetna (Private / Medicare)", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
+  { name: "Allegiance (Cigna)", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }, { url: "https://www.askallegiance.com/Resources/Providers", label: "Direct portal", secondary: true }], badges: ["availity", "account"] },
+  { name: "All Savers", portals: [{ url: "https://www.myallsaversconnect.com/tpa-ap-web/?navDeepDive=APAS%20publicHomeDefaultContent", label: "Open portal" }], badges: ["account"] },
+  { name: "Allied Administrative Services", portals: [{ url: "https://www.alliedbenefit.com/Providers", label: "Open portal" }], badges: ["nologin"] },
+  { name: "Allstate Supp Medicare", portals: [{ url: "https://www.provlookup.com/AllstateHealth/PolicyLookup/Verification", label: "Open portal" }], badges: ["nologin"] },
+  { name: "Ambetter (Superior)", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }, { url: "https://sso.entrykeyid.com/as/authorization.oauth2?response_type=code&client_id=ad86bf0f-cfa8-4003-8704-0dad6efa8ba6&scope=openid%20profile&state=uZ0p-1FV8jI7egYH5sY296HJk-INCZyOaBmvgqIO5W4%3D&redirect_uri=https://provider.superiorhealthplan.com/careconnect/login/oauth2/code/pingcloud&code_challenge_method=S256&nonce=v5eOgvmk5uxdRona1i3dTeSu2eRubRfdsqPVhPXKvVc&code_challenge=Q9TMthSgFzUAvv6siIfd0i27AWdScieH0fBCXPjQrDw&app_origin=https://provider.superiorhealthplan.com/careconnect/login/oauth2/code/pingcloud&brand=superiorhealthplan", label: "Direct portal", secondary: true }], badges: ["availity", "account"] },
+  { name: "Angle Health", portals: [{ url: "https://eligibility.anglehealth.com/", label: "Open portal" }], badges: [] },
+  { name: "Availity", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Open portal" }], badges: ["availity"] },
+  { name: "BlackHawk", portals: [{ url: "https://portal.blackhawktpa.com/ProviderPortal/Inquiry/Eligibility", label: "Open portal" }], badges: ["nologin"] },
+  { name: "Blue Cross Blue Shield (BCBS)", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
+  { name: "Boon Chapman", portals: [{ url: "https://secure.healthx.com/v3app/a/?6713520D04184E071C0D1D261C0E191A0C0A1C002400133E0600410A0A1D552D0B151A1D0D16111B195C6A1D13081C114B1300310A5A350658155E0715137F505208595B59420C425A7D590544570350415E711600655253585F0715432C18471F1701050C545F48360B151F0706001B177C09003404030B5D03460C7F50025C595C524750420F245756440F075311107847046F03550B14431B593B0C06514C2C234C2A2A5C7757575928515231477742576755262B592142637D21275E435F51455A595F7356/&redir=4", label: "Open portal" }], badges: ["account"] },
+  { name: "ChampVA", portals: [{ url: "https://www.ecarenext.com/MVCAuth/PHC_Auth_MVC/Login.aspx?ReturnURL=/eCareNext/Worklist?", label: "eCare Next" }], badges: ["elig"], phone: "800-733-8387" },
+  { name: "Christian Care Ministry", portals: [{ url: "https://www.medishare.com/forproviders", label: "Open portal" }, { url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity", secondary: true }], badges: ["availity"] },
+  { name: "Christus Health Plan", portals: [{ url: "https://christushealthprovider.healthtrioconnect.com/app/index.page?xsesschk=ba6c6cbe1a5e43c385447acac48fda13", label: "Open portal" }], badges: ["account"] },
+  { name: "Cigna", portals: [{ url: "https://cignaforhcp.cigna.com/app/login", label: "Open portal" }], badges: ["account"] },
+  { name: "Claritev (Multiplan)", portals: [{ url: "https://login.multiplan.com/login?appID=provider&fromURI=https%3A%2F%2Fmultiplan-ciam.okta.com%2Fapp%2Fmultiplan-ciam_providerportalsaml_1%2Fexkcc35yfwocfATI4697%2Fsso%2Fsaml", label: "Open portal" }], badges: [] },
+  { name: "Colonial Penn", portals: [{ url: "https://colpennproviders.bankers.com/web/colpenn/login", label: "Open portal" }], badges: [] },
+  { name: "Community Health Choice", portals: [{ url: "https://providerportal.communityhealthchoice.org/s/login/?ec=302&startURL=%2Fs%2F", label: "Open portal" }], badges: ["account"] },
+  { name: "Curative", portals: [{ url: "https://curative.com/eligibility", label: "Open portal" }], badges: ["account"] },
+  { name: "Devoted Health", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
+  { name: "EMI Health", portals: [{ url: "https://emihealth.com/Providers/MemberLookup", label: "Open portal" }], badges: [] },
+  { name: "Evernorth (Cigna BH)", portals: [{ url: "https://provider.evernorth.com/app/login", label: "Evernorth" }, { url: "https://cignaforhcp.cigna.com/app/login", label: "Cigna", secondary: true }], badges: ["account"] },
+  { name: "Evry Health", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
+  { name: "Experian / eCare Next Bar", portals: [{ url: "https://www.ecarenext.com/MVCAuth/PHC_Auth_MVC/Login.aspx?ReturnURL=/eCareNext/Worklist?", label: "eCare Next" }, { url: "https://login.zirmed.com/ui", label: "Waystar", secondary: true }], badges: ["elig"] },
+  { name: "Gravie Admin (Aetna)", portals: [{ url: "https://www.gravie.com/providers/eligibility/", label: "Open portal" }], badges: ["nologin"] },
+  { name: "Healthspring Medicare (formerly Cigna Medicare)", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
+  { name: "Humana", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
+  { name: "Humana Tricare", portals: [{ url: "https://infocenter.humana-military.com/prov/service/Account/Login", label: "Open portal" }], badges: ["account"] },
+  { name: "IBA", portals: [{ url: "https://ibatpa.healthspace.net/ProviderPortal/Inquiry/Eligibility", label: "Open portal" }], badges: ["nologin"] },
+  { name: "Imagine360", portals: [{ url: "https://mibenefits.imagine360.com/login", label: "Open portal" }], badges: [] },
+  { name: "Imperial Health", portals: [{ url: "https://portal.imperialhealthholdings.com/EZ-NET60/Login.aspx", label: "Open portal" }], badges: ["account"] },
+  { name: "Kelsey", portals: [{ url: "https://kelseycarelink.com/EpicCareLink/common/epic_login.asp", label: "Open portal" }], badges: [] },
+  { name: "Lucent Health", portals: [{ url: "https://mylucenthealth.com/v3app/publicservice/loginv1/login.aspx?bc=a7dab84a-2341-467d-8bc0-31431d64bff0&serviceid=c562e51c-1e71-4213-a000-e22a6b291919", label: "Open portal" }], badges: [], phone: "844-734-3614" },
+  { name: "Luminare", portals: [{ url: "https://login.hlthben.com/am/XUI/?realm=/alpha&authIndexType=service&authIndexValue=LoginSwitch&icelook=hb&goto=https%3A%2F%2Flogin.hlthben.com%2Fam%2Fidpssoinit%3FmetaAlias%3D%2Falpha%2FLuminare%26spEntityID%3Dhttps%3A%2F%2Fwebs.hlthben.com%2Fisam%2Fsps%2Fpaic%2Fsaml20%26RelayState%3Dhttps%3A%2F%2Fportal.hlthben.com%2Fwps%2Fmyportal%2Fice%2F%3Ficelook%3Dhb", label: "Open portal" }], badges: [], phone: "800-554-4491" },
+  { name: "Magellan", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
+  { name: "Manhattan Life", portals: [{ url: "https://provider.manhattanlife.com/Account/Login", label: "Open portal" }], badges: ["nologin"] },
+  { name: "Medi-Share", portals: [{ url: "https://www.medishare.com/forproviders", label: "Open portal" }, { url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity", secondary: true }], badges: ["availity"] },
+  { name: "Memorial Hermann", portals: [{ url: "https://mhapexprovider.healthtrioconnect.com/app/index.page?xsesschk=c13f9d4f1475451aaa3a1c44453e8ca3", label: "Open portal" }], badges: ["account"] },
+  { name: "Meritain Health (Aetna)", portals: [{ url: "https://account.meritain.com/portal", label: "Open portal" }, { url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity", secondary: true }], badges: ["availity"] },
+  { name: "Molina Healthcare", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
+  { name: "Mutual of Omaha", portals: [{ url: "https://www31.mutualofomaha.com/ProviderAccess/eligibilitySearch", label: "Open portal" }], badges: ["nologin"] },
+  { name: "MVP Health Care", portals: [{ url: "https://swp.mvphealthcare.com/extweb/providerSelfService/AccountSummary/AccountSummary.aspx", label: "Open portal" }], badges: ["account"] },
+  { name: "Novitasphere", portals: [{ url: "https://www.novitasphere.com/secure/login", label: "Open portal" }], badges: ["account"] },
+  { name: "Optum Behavioral Health", portals: [{ url: "https://www.providerexpress.com/", label: "Open portal" }], badges: [] },
+  { name: "Oscar Health Plan", portals: [{ url: "https://provider.hioscar.com/search", label: "Open portal" }], badges: ["account"] },
+  { name: "Pointer Comfort Underwriters", portals: [{ url: "https://eligibility.pointcomfort.com/", label: "Open portal" }], badges: ["nologin"] },
+  { name: "PPC / Ovation", portals: [{ url: "https://app.synthesishealthsoft.com/ovationprovider/login.aspx", label: "Open portal" }], badges: ["callppc"] },
+  { name: "PPC / Ovation (Summary View)", portals: [{ url: "https://app.synthesishealthsoft.com/ppcmember/", label: "Open portal" }], badges: ["callppc"] },
+  { name: "Presbyterian Health Plan", portals: [{ url: "https://mypres.phs.org/Pages/default.aspx", label: "Open portal" }], badges: [], phone: "800-356-2219" },
+  { name: "S&S Health Plan", portals: [{ url: "https://secure.healthx.com/v3app/a/?6713520D04184E041C0D022C0D140C1C130C11166E1E0A300C0B18584A1F4E2F0C0F42151B110C560D0D785A065D5B530613446C17526201485A5C06100C295D0058595805100A570B755C535D0F5243011633040C34000C0A545643122A06040F4C4552435C5943710D010A435C5217446C17506156035C0D0416107A0147040C1B0813545C5F762D252C5D245C4240023655635C52585C5147187E50522A4350594751582D005C2628585124/", label: "Open portal" }], badges: ["account"], phone: "844-486-8235" },
+  { name: "Sana Benefits", portals: [{ url: "https://help.sanabenefits.com/hc/en-us/articles/360024591211-Check-Eligibility-Verify-Benefits", label: "Open portal" }], badges: [] },
+  { name: "Superior Health Plan", portals: [{ url: "https://sso.entrykeyid.com/as/authorization.oauth2?response_type=code&client_id=ad86bf0f-cfa8-4003-8704-0dad6efa8ba6&scope=openid%20profile&state=Or70d56gXNSoufhPhlQKCT9K9-BtHaTYLkY2Fq6d9bQ%3D&redirect_uri=https://provider.superiorhealthplan.com/careconnect/login/oauth2/code/pingcloud&code_challenge_method=S256&nonce=VdGqAf4duxQQuuuY0HiAPiPelFBZDj2DkqYRt-GoOnA&code_challenge=_Lc2AAxAUQQnkTujpMus_vOwJ8IDzkn3sLZLaeb3iAY&app_origin=https://provider.superiorhealthplan.com/careconnect/login/oauth2/code/pingcloud&brand=superiorhealthplan", label: "Open portal" }], badges: ["account"] },
+  { name: "Tall Tree Administrator", portals: [{ url: "https://talltreehealth.com/provider/provider_login", label: "Open portal" }], badges: [] },
+  { name: "TeamCare", portals: [{ url: "https://myteamcare.org/dashboard?trkEvent=login", label: "Open portal" }], badges: [] },
+  { name: "Texas Children's Health Plan", portals: [{ url: "https://epiccarelink.texaschildrens.org/EpicCareLink/Tapestry/enrollment/GuestEligWrapper.asp", label: "Eligibility status" }, { url: "https://epiccarelink.texaschildrens.org/EpicCareLink/common/epic_login.asp", label: "Full portal", secondary: true }], badges: ["account"] },
+  { name: "TMHP", portals: [{ url: "https://www.tmhp.com/", label: "Open portal" }], badges: ["account"] },
+  { name: "UMR", portals: [{ url: "https://provider.umr.com/", label: "Open portal" }], badges: [] },
+  { name: "Unified", portals: [{ url: "https://secure.healthx.com/v3app/publicservice/loginv1/login.aspx?bc=aaaf1ad8-3fd5-4a58-b1f3-7f1b0cdae6a1&serviceid=8a7ac279-393a-44cd-a21d-bb42033b720c", label: "Open portal" }], badges: [] },
+  { name: "UnitedHealthcare / UHC", portals: [{ url: "https://secure.uhcprovider.com/", label: "Open portal" }], badges: ["account"] },
+  { name: "United Health Shared Services (UHSS)", portals: [{ url: "https://provider-uhss.umr.com/tpa-ap-web/?navDeepDive=UHSS%20publicHomeDefaultContent", label: "Open portal" }], badges: [] },
+  { name: "US Health Group", portals: [{ url: "https://ushgproviders.b2clogin.com/ushgproviders.onmicrosoft.com/b2c_1a_signup_signin/oauth2/v2.0/authorize?client_id=b0e035a6-557c-4145-99b2-c81a39a265c1&scope=b0e035a6-557c-4145-99b2-c81a39a265c1%20openid%20profile%20offline_access&redirect_uri=https%3A%2F%2Fproviderportal.ushealthgroup.com%2F&response_mode=fragment&response_type=code", label: "Open portal" }], badges: ["account"], phone: "866-745-8744" },
+  { name: "Waystar", portals: [{ url: "https://login.zirmed.com/ui", label: "Open portal" }], badges: ["elig"] },
+  { name: "WEBTPA", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
+  { name: "WellCare", portals: [{ url: "https://provider.wellcare.com/", label: "Open portal" }, { url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity", secondary: true }], badges: ["availity"] },
+  { name: "Wellpoint", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
+  { name: "Zing Health", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
+];
+
+const PHONE_PAYERS = [
+  { name: "Adventist Health", phone: "800-441-2524" },
+  { name: "Aither Health", phone: "833-370-9235" },
+  { name: "Benefit Health Plan", phone: "800-874-2378" },
+  { name: "Boon Group", phone: "866-863-4139" },
+  { name: "CHIP Line (8am-6pm)", phone: "800-645-7164" },
+  { name: "Christus Family Health", phone: "1-800-678-7347" },
+  { name: "Cigna EAP", phone: "877-622-4327", eap: true },
+  { name: "Essential StaffCare", phone: "866-798-0803" },
+  { name: "Entrust", phone: "844-632-7878" },
+  { name: "Health Plans Inc", phone: "888-275-3775" },
+  { name: "Loomis Insurance", phone: "877-959-9952" },
+  { name: "NALC Benefit Plan", phone: "703-729-4677" },
+  { name: "Optum EAP", phone: "1-877-614-0484", eap: true },
+  { name: "Pan-American Benefits", phone: "877-569-3075" },
+  { name: "Redirect Health Administration", phone: "888-407-7928" },
+  { name: "Reliance Standard", phone: "866-375-0775" },
+  { name: "Reliance (ASRM LLC)", phone: "866-375-0775" },
+  { name: "SBMA", phone: "888-505-7724" },
+  { name: "SGIC", phone: "855-773-2884" },
+  { name: "State Farm Supplement", phone: "866-855-1212" },
+  { name: "The American Worker", phone: "855-495-1190" },
+  { name: "Transamerica", phone: "866-975-4641" },
+  { name: "Triwest VA", phone: "713-794-8777" },
+];
+
+const NETWORK_PAYERS = [
+  { name: "PHCS" },
+  { name: "Multiplan" },
+  { name: "First Health Network" },
+];
+
+const BADGE_MAP = {
+  nologin:  { text: "No login needed",                   cls: "badge-green"  },
+  account:  { text: "Account required",                  cls: "badge-yellow" },
+  availity: { text: "Via Availity",                      cls: "badge-blue"   },
+  callppc:  { text: "Must call PPC",                     cls: "badge-orange" },
+  elig:     { text: "Electronic eligibility transactions", cls: "badge-purple" },
+};
+
+const MONITOR_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
+const PHONE_SVG   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>`;
+const EXT_SVG     = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+const GLOBE_SVG   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`;
+const NETWORK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="16" y="2" width="6" height="6" rx="1"/><rect x="9" y="16" width="6" height="6" rx="1"/><path d="M5 8v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><line x1="12" y1="14" x2="12" y2="16"/></svg>`;
+
+const SMALL_PHONE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:10px;height:10px;flex-shrink:0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>`;
+
+let currentFilter = 'all';
+let searchTerm = '';
+
+function badgeHTML(list) {
+  return list.map(b => {
+    const m = BADGE_MAP[b];
+    return m ? `<span class="badge ${m.cls}">${m.text}</span>` : '';
+  }).join('');
+}
+
+function portalButtons(portals) {
+  return portals.map(p =>
+    `<a class="portal-btn${p.secondary ? ' secondary' : ''}" href="${p.url}" target="_blank" rel="noopener noreferrer">${EXT_SVG} ${p.label}</a>`
+  ).join('');
+}
+
+function render() {
+  const q = searchTerm.toLowerCase().trim();
+  const portals  = PORTAL_PAYERS.filter(p => p.name.toLowerCase().includes(q));
+  const phones   = PHONE_PAYERS.filter(p => p.name.toLowerCase().includes(q));
+  const networks = NETWORK_PAYERS.filter(n => n.name.toLowerCase().includes(q));
+
+  const showPortals  = currentFilter === 'all';
+  const showPhones   = currentFilter === 'all' || currentFilter === 'phone';
+  const showNetworks = currentFilter === 'all';
+
+  let html = '';
+  let count = 0;
+
+  if (showPortals && portals.length) {
+    count += portals.length;
+    html += `<div class="section-header">${MONITOR_SVG} Portal payers (${portals.length})</div>`;
+    portals.forEach(p => {
+      const phoneBadge = p.phone
+        ? `<span class="badge badge-teal" style="display:inline-flex;align-items:center;gap:3px;font-size:10px">${SMALL_PHONE} ${p.phone}</span>`
+        : '';
+      html += `<div class="payer-row">
+        <div class="payer-info">
+          <div class="payer-name">${p.name}</div>
+          <div class="badges">${badgeHTML(p.badges)}${phoneBadge}</div>
+        </div>
+        <div class="payer-action">${portalButtons(p.portals)}</div>
+      </div>`;
+    });
+  }
+
+  if (showPhones && phones.length) {
+    count += phones.length;
+    html += `<div class="section-header">${PHONE_SVG} Phone only — refer to back of insurance card (${phones.length})</div>`;
+    phones.forEach(p => {
+      const eapBadge = p.eap ? `<span class="badge badge-red">Patient must provide authorization letter</span>` : '';
+      html += `<div class="payer-row">
+        <div class="payer-info">
+          <div class="payer-name">${p.name}</div>
+          <div class="badges"><span class="badge badge-gray">Refer to back of card</span>${eapBadge}</div>
+        </div>
+        <div class="payer-action">
+          <div class="phone-display">${PHONE_SVG} ${p.phone}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  if (showNetworks && networks.length) {
+    count += networks.length;
+    html += `<div class="section-header">${NETWORK_SVG} Typically network only (${networks.length})</div>`;
+    networks.forEach(n => {
+      html += `<div class="payer-row">
+        <div class="payer-info">
+          <div class="payer-name">${n.name}</div>
+          <div class="badges">
+            <span class="badge badge-orange">Typically network only</span>
+            <span class="badge badge-gray">Confirm actual payer &amp; refer to back of card</span>
+          </div>
+        </div>
+        <div class="payer-action"><div class="no-phone">No portal or phone</div></div>
+      </div>`;
+    });
+  }
+
+  if (!count) {
+    const qDisplay = searchTerm ? `<span class="empty-query">"${searchTerm}"</span>` : 'that payer';
+    const googleQ  = encodeURIComponent((searchTerm || 'insurance') + ' provider portal');
+    html = `<div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-title">No payer found for ${qDisplay}</div>
+      <div class="empty-sub">Refer to the back of the insurance card for contact info,<br>or try searching online for the provider portal.</div>
+      <a class="empty-search-btn" href="https://www.google.com/search?q=${googleQ}" target="_blank" rel="noopener">${GLOBE_SVG} Search "${searchTerm || 'payer'} provider portal" online</a>
+    </div>`;
+  }
+
+  document.getElementById('listContainer').innerHTML = html;
+  document.getElementById('payerCount').textContent = count;
+}
+
+document.getElementById('searchInput').addEventListener('input', e => { searchTerm = e.target.value; render(); });
+
+document.getElementById('filterAll').addEventListener('click', function() {
+  currentFilter = 'all';
+  this.classList.add('active');
+  document.getElementById('filterPhone').classList.remove('active');
+  render();
+});
+document.getElementById('filterPhone').addEventListener('click', function() {
+  currentFilter = 'phone';
+  this.classList.add('active');
+  document.getElementById('filterAll').classList.remove('active');
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
