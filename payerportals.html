@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Payer Quick Lookup</title>
+<title>Payer Portal Quick Lookup</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 560px; width: 100%; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fff; }
@@ -112,7 +112,7 @@
 
   <footer class="footer">
     <div class="footer-count">Showing <strong id="payerCount">0</strong> payers</div>
-    <div class="footer-updated">Last updated May 2026</div>
+    <div class="footer-updated">Last updated May 2026 RJ</div>
   </footer>
 
 </div>
@@ -128,6 +128,7 @@ const PORTAL_PAYERS = [
   { name: "Ambetter (Superior)", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }, { url: "https://sso.entrykeyid.com/as/authorization.oauth2?response_type=code&client_id=ad86bf0f-cfa8-4003-8704-0dad6efa8ba6&scope=openid%20profile&state=uZ0p-1FV8jI7egYH5sY296HJk-INCZyOaBmvgqIO5W4%3D&redirect_uri=https://provider.superiorhealthplan.com/careconnect/login/oauth2/code/pingcloud&code_challenge_method=S256&nonce=v5eOgvmk5uxdRona1i3dTeSu2eRubRfdsqPVhPXKvVc&code_challenge=Q9TMthSgFzUAvv6siIfd0i27AWdScieH0fBCXPjQrDw&app_origin=https://provider.superiorhealthplan.com/careconnect/login/oauth2/code/pingcloud&brand=superiorhealthplan", label: "Direct portal", secondary: true }], badges: ["availity", "account"] },
   { name: "Angle Health", portals: [{ url: "https://eligibility.anglehealth.com/", label: "Open portal" }], badges: [] },
   { name: "Availity", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Open portal" }], badges: ["availity"] },
+  { name: "Benefit Health Plan", portals: [{ url: "https://benefithealthplan.com/providers", label: "Open portal" }], badges: [], phone: "800-874-2378" },
   { name: "BlackHawk", portals: [{ url: "https://portal.blackhawktpa.com/ProviderPortal/Inquiry/Eligibility", label: "Open portal" }], badges: ["nologin"] },
   { name: "Blue Cross Blue Shield (BCBS)", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
   { name: "Boon Chapman", portals: [{ url: "https://secure.healthx.com/v3app/a/?6713520D04184E071C0D1D261C0E191A0C0A1C002400133E0600410A0A1D552D0B151A1D0D16111B195C6A1D13081C114B1300310A5A350658155E0715137F505208595B59420C425A7D590544570350415E711600655253585F0715432C18471F1701050C545F48360B151F0706001B177C09003404030B5D03460C7F50025C595C524750420F245756440F075311107847046F03550B14431B593B0C06514C2C234C2A2A5C7757575928515231477742576755262B592142637D21275E435F51455A595F7356/&redir=4", label: "Open portal" }], badges: ["account"] },
@@ -149,7 +150,7 @@ const PORTAL_PAYERS = [
   { name: "Humana", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
   { name: "Humana Tricare", portals: [{ url: "https://infocenter.humana-military.com/prov/service/Account/Login", label: "Open portal" }], badges: ["account"] },
   { name: "IBA", portals: [{ url: "https://ibatpa.healthspace.net/ProviderPortal/Inquiry/Eligibility", label: "Open portal" }], badges: ["nologin"] },
-  { name: "Imagine360", portals: [{ url: "https://mibenefits.imagine360.com/login", label: "Open portal" }], badges: [] },
+  { name: "Imagine360", portals: [{ url: "https://mibenefits.imagine360.com/login", label: "Open portal" }], badges: ["account"] },
   { name: "Imperial Health", portals: [{ url: "https://portal.imperialhealthholdings.com/EZ-NET60/Login.aspx", label: "Open portal" }], badges: ["account"] },
   { name: "Kelsey", portals: [{ url: "https://kelseycarelink.com/EpicCareLink/common/epic_login.asp", label: "Open portal" }], badges: [] },
   { name: "Lucent Health", portals: [{ url: "https://mylucenthealth.com/v3app/publicservice/loginv1/login.aspx?bc=a7dab84a-2341-467d-8bc0-31431d64bff0&serviceid=c562e51c-1e71-4213-a000-e22a6b291919", label: "Open portal" }], badges: [], phone: "844-734-3614" },
@@ -162,12 +163,11 @@ const PORTAL_PAYERS = [
   { name: "Molina Healthcare", portals: [{ url: "https://essentials.availity.com/static/public/onb/onboarding-ui-apps/availity-fr-ui/", label: "Via Availity" }], badges: ["availity"] },
   { name: "Mutual of Omaha", portals: [{ url: "https://www31.mutualofomaha.com/ProviderAccess/eligibilitySearch", label: "Open portal" }], badges: ["nologin"] },
   { name: "MVP Health Care", portals: [{ url: "https://swp.mvphealthcare.com/extweb/providerSelfService/AccountSummary/AccountSummary.aspx", label: "Open portal" }], badges: ["account"] },
-  { name: "Novitasphere", portals: [{ url: "https://www.novitasphere.com/secure/login", label: "Open portal" }], badges: ["account"] },
+  { name: "Novitasphere (Medicare Part B)", portals: [{ url: "https://www.novitasphere.com/secure/login", label: "Open portal" }], badges: ["account"] },
   { name: "Optum Behavioral Health", portals: [{ url: "https://www.providerexpress.com/", label: "Open portal" }], badges: [] },
   { name: "Oscar Health Plan", portals: [{ url: "https://provider.hioscar.com/search", label: "Open portal" }], badges: ["account"] },
   { name: "Pointer Comfort Underwriters", portals: [{ url: "https://eligibility.pointcomfort.com/", label: "Open portal" }], badges: ["nologin"] },
-  { name: "PPC / Ovation", portals: [{ url: "https://app.synthesishealthsoft.com/ovationprovider/login.aspx", label: "Open portal" }], badges: ["callppc"] },
-  { name: "PPC / Ovation (Summary View)", portals: [{ url: "https://app.synthesishealthsoft.com/ppcmember/", label: "Open portal" }], badges: ["callppc"] },
+  { name: "PPC / Ovation", portals: [{ url: "https://app.synthesishealthsoft.com/ovationprovider/login.aspx", label: "Open portal" }, { url: "https://app.synthesishealthsoft.com/ppcmember/", label: "Summary view", secondary: true }], badges: ["callppc"] },
   { name: "Presbyterian Health Plan", portals: [{ url: "https://mypres.phs.org/Pages/default.aspx", label: "Open portal" }], badges: [], phone: "800-356-2219" },
   { name: "S&S Health Plan", portals: [{ url: "https://secure.healthx.com/v3app/a/?6713520D04184E041C0D022C0D140C1C130C11166E1E0A300C0B18584A1F4E2F0C0F42151B110C560D0D785A065D5B530613446C17526201485A5C06100C295D0058595805100A570B755C535D0F5243011633040C34000C0A545643122A06040F4C4552435C5943710D010A435C5217446C17506156035C0D0416107A0147040C1B0813545C5F762D252C5D245C4240023655635C52585C5147187E50522A4350594751582D005C2628585124/", label: "Open portal" }], badges: ["account"], phone: "844-486-8235" },
   { name: "Sana Benefits", portals: [{ url: "https://help.sanabenefits.com/hc/en-us/articles/360024591211-Check-Eligibility-Verify-Benefits", label: "Open portal" }], badges: [] },
@@ -191,7 +191,6 @@ const PORTAL_PAYERS = [
 const PHONE_PAYERS = [
   { name: "Adventist Health", phone: "800-441-2524" },
   { name: "Aither Health", phone: "833-370-9235" },
-  { name: "Benefit Health Plan", phone: "800-874-2378" },
   { name: "Boon Group", phone: "866-863-4139" },
   { name: "CHIP Line (8am-6pm)", phone: "800-645-7164" },
   { name: "Christus Family Health", phone: "1-800-678-7347" },
@@ -212,6 +211,7 @@ const PHONE_PAYERS = [
   { name: "The American Worker", phone: "855-495-1190" },
   { name: "Transamerica", phone: "866-975-4641" },
   { name: "Triwest VA", phone: "713-794-8777" },
+  { name: "TMHP (TPR Removal)", phone: "800-925-9126 opt 7,1,1", tphbadge: "tmhpcob" },
 ];
 
 const NETWORK_PAYERS = [
@@ -225,6 +225,7 @@ const BADGE_MAP = {
   account:  { text: "Account required",                  cls: "badge-yellow" },
   availity: { text: "Via Availity",                      cls: "badge-blue"   },
   callppc:  { text: "Must call PPC",                     cls: "badge-orange" },
+  tmhpcob: { text: "Patient must contact MCO for COB update", cls: "badge-red" },
   elig:     { text: "Electronic eligibility transactions", cls: "badge-purple" },
 };
 
@@ -286,11 +287,12 @@ function render() {
     count += phones.length;
     html += `<div class="section-header">${PHONE_SVG} Phone only — refer to back of insurance card (${phones.length})</div>`;
     phones.forEach(p => {
-      const eapBadge = p.eap ? `<span class="badge badge-red">Patient must provide authorization letter</span>` : '';
-      html += `<div class="payer-row">
-        <div class="payer-info">
-          <div class="payer-name">${p.name}</div>
-          <div class="badges"><span class="badge badge-gray">Refer to back of card</span>${eapBadge}</div>
+  const eapBadge = p.eap ? `<span class="badge badge-red">Patient must provide authorization letter</span>` : '';
+  const customBadge = p.tphbadge && BADGE_MAP[p.tphbadge] ? `<span class="badge ${BADGE_MAP[p.tphbadge].cls}">${BADGE_MAP[p.tphbadge].text}</span>` : '';
+  html += `<div class="payer-row">
+    <div class="payer-info">
+      <div class="payer-name">${p.name}</div>
+      <div class="badges"><span class="badge badge-gray">Refer to back of card</span>${eapBadge}${customBadge}</div>
         </div>
         <div class="payer-action">
           <div class="phone-display">${PHONE_SVG} ${p.phone}</div>
